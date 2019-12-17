@@ -1,0 +1,33 @@
+DEFAULT menu.c32
+MENU TITLE ESXi Boot Menu
+PROMPT 0
+TIMEOUT 100
+ONTIMEOUT install-67u2
+
+LABEL install-67u2
+	KERNEL esxi/67u2/mboot.c32
+	APPEND -c esxi/67u2/boot.cfg
+	MENU LABEL ESXi-6.7u2 ^Installer
+	IPAPPEND 2
+
+LABEL install-67u1
+	KERNEL esxi/67u1/mboot.c32
+	APPEND -c esxi/67u1/boot.cfg
+	MENU LABEL ESXi-6.7u1 ^Installer
+	IPAPPEND 2
+
+LABEL install-65u2
+	KERNEL esxi/65u2/mboot.c32
+	APPEND -c esxi/65u2/boot.cfg
+	MENU LABEL ESXi-6.5u2 ^Installer
+	IPAPPEND 2
+
+LABEL install-60u2
+	KERNEL esxi/60u2/mboot.c32
+	APPEND -c esxi/60u2/boot.cfg
+	MENU LABEL ESXi-6.0u2 ^Installer
+	IPAPPEND 2
+
+LABEL hddboot
+	LOCALBOOT 0x80
+	MENU LABEL ^Boot from local disk
