@@ -1,0 +1,43 @@
+# ks_cust.cfg.tmpl
+# Accept the VMware End User License Agreement
+accepteula
+clearpart --firstdisk --overwritevmfs
+install --firstdisk --overwritevmfs
+rootpw d3fault-p@ssw0rd!
+network --bootproto=dhcp
+reboot
+
+#Firstboot section 1
+%firstboot --interpreter=busybox
+
+# Ensure hostd is ready
+while ! vim-cmd hostsvc/runtimeinfo; do
+sleep 10
+done
+
+# Enable SSH
+vim-cmd hostsvc/enable_ssh
+vim-cmd hostsvc/start_ssh
+
+# Set hostname
+esxcli system hostname set -f $BLADE_HOSTNAME
+
+# Disable GIPv6
+esxcli network ip set --ipv6-enabled=false
+
+# VSwitch Configurations
+esxcli network vswitch standard uplink add --uplink-name=vmnic1 --vswitch-name=vSwitch0
+esxcli network vswitch standard policy failover set --active-uplinks=vmnic0,vmnic1 --vswitch-name=vSwitch0
+esxcli network vswitch standard portgroup policy failover set --use-vswitch --portgroup-name="Management Network"
+esxcli network vswitch standard portgroup remove --portgroup-name="VM Network" --vswitch-name="vSwitch0"
+esxcli network ip interface ipv4 set --interface-name=vmk0 --ipv4=172.16.1.$BLADE_NUM --netmask=255.255.255.0 --gateway=172.16.1.1 --type=static
+esxcli network ip dns server add --server="8.8.8.8"
+esxcfg-route -a default 172.16.1.1
+
+# Rename datastore1
+vim-cmd hostsvc/datastore/rename datastore1 "$BLADE_HOSTNAME-local"
+
+# Enter Maintenance mode
+vim-cmd hostsvc/maintenance_mode_enter
+
+reboot
